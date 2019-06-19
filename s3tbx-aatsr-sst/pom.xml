@@ -27,7 +27,8 @@
     <packaging>nbm</packaging>
 
     <name>AATSR SST Processor</name>
-    <description>The AATSR SST Processor is aimed to enable the user to calculate the sea-surface temperature from (A)ATSR brightness temperatures.
+    <description>The AATSR SST Processor is aimed to enable the user to calculate the sea-surface temperature from
+        (A)ATSR brightness temperatures.
         The implementation is explicitly opened for the addition of new coefficient sets.
     </description>
 
@@ -73,7 +74,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

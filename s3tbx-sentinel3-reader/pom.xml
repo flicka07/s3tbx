@@ -30,7 +30,8 @@
     <name>Sentinel-3 OLCI/SLSTR Product Reader</name>
 
     <description>
-        This module enables the Sentinel Toolbox to read the following Sentinel-3 data products: OLCI L1b and L2, SLSTR L1b and L2, Synergy L2 and
+        This module enables the Sentinel Toolbox to read the following Sentinel-3 data products: OLCI L1b and L2, SLSTR
+        L1b and L2, Synergy L2 and
         VGT.
     </description>
 
@@ -81,7 +82,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

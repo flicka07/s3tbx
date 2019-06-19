@@ -31,7 +31,8 @@
 
     <description>Provides the Case-2 Regional / Coast Colour (C2RCC) Atmospheric Correction (AC) and
         Inherent Optical Properties (IOP) Processor for Sentinel-3 OLCI, Sentinel-2 MSI, Landsat-8,
-        MERIS (incl. 4th repro), MODIS, SeaWiFS and VIIRS Level 1C radiance products.</description>
+        MERIS (incl. 4th repro), MODIS, SeaWiFS and VIIRS Level 1C radiance products.
+    </description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -114,7 +115,9 @@
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
@@ -136,8 +139,8 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
         </plugins>
     </build>
-    
+
 </project>
