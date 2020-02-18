@@ -114,8 +114,9 @@ public class AatsrLevel1ProductFactory extends SlstrLevel1ProductFactory {
                 lonGrid = grid;
             }
         }
-
-        targetProduct.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
+        if (latGrid != null && lonGrid != null) {
+            targetProduct.setSceneGeoCoding(new TiePointGeoCoding(latGrid, lonGrid));
+        }
     }
 
     @Override
@@ -136,13 +137,12 @@ public class AatsrLevel1ProductFactory extends SlstrLevel1ProductFactory {
                 "solar_zenith_to",
         };
 
-        for (TiePointGrid grid : targetProduct.getTiePointGrids()) {
-            for (String angleName : ANGLE_NAMES) {
-                if (grid.getName().equals(angleName)) {
-                    TiePointGrid fixedGrid = getFixedAngleGrid(grid);
-                    targetProduct.getTiePointGridGroup().remove(grid);
-                    targetProduct.getTiePointGridGroup().add(fixedGrid);
-                }
+        for (String angleName : ANGLE_NAMES) {
+            TiePointGrid angleGrid = targetProduct.getTiePointGrid(angleName);
+            if (angleGrid != null) {
+                TiePointGrid fixedAngleGrid = getFixedAngleGrid(angleGrid);
+                targetProduct.getTiePointGridGroup().remove(angleGrid);
+                targetProduct.getTiePointGridGroup().add(fixedAngleGrid);
             }
         }
 
@@ -176,10 +176,20 @@ public class AatsrLevel1ProductFactory extends SlstrLevel1ProductFactory {
     }
 
     private static TiePointGrid getFixedLatLonGrid(TiePointGrid grid, boolean isAngle) {
-        int firstFillIndex = -1;
+        int firstValidIndex = -1;
         int gridWidth = grid.getGridWidth();
         float[] originalTiePoints = grid.getTiePoints();
-        for (int i = 0; i < originalTiePoints.length - 6; i++) {
+        for (int i = 0; i < originalTiePoints.length; i++) {
+            if (Math.abs(originalTiePoints[i] - ANGLE_FILL_VALUE) > 1E-2) {
+                firstValidIndex = i;
+                break;
+            }
+        }
+        if (firstValidIndex == -1) {
+            return grid;
+        }
+        int firstFillIndex = -1;
+        for (int i = firstValidIndex; i < originalTiePoints.length - 6; i++) {
             if (isAngle) {
                 // check if 6 times fill value in a column: then cut at the end.
                 if (Math.abs(originalTiePoints[i] - ANGLE_FILL_VALUE) < 1E-2
@@ -201,14 +211,16 @@ public class AatsrLevel1ProductFactory extends SlstrLevel1ProductFactory {
 
         if (firstFillIndex == -1) {
             return grid;
-        } else {
-            int line = firstFillIndex / grid.getGridWidth();
-            int newHeight = line - 1;
-
-            float[] tiePoints = new float[gridWidth * newHeight];
-            System.arraycopy(originalTiePoints, 0, tiePoints, 0, tiePoints.length);
-            return new TiePointGrid(grid.getName(), gridWidth, newHeight, grid.getOffsetX(), grid.getOffsetY(), grid.getSubSamplingX(), grid.getSubSamplingY(), tiePoints, true);
         }
+        int firstValidLine = firstValidIndex / gridWidth;
+        int offsetOfFirstValidLine = firstValidLine * gridWidth;
+        int lastValidLine = firstFillIndex / gridWidth;
+        int newHeight = lastValidLine - firstValidLine - 1;
+        float[] tiePoints = new float[gridWidth * newHeight];
+        System.arraycopy(originalTiePoints, offsetOfFirstValidLine, tiePoints, 0, tiePoints.length);
+        double offsetY = grid.getOffsetY() + (firstValidLine * grid.getSubSamplingY());
+        return new TiePointGrid(grid.getName(), gridWidth, newHeight, grid.getOffsetX(), offsetY,
+                grid.getSubSamplingX(), grid.getSubSamplingY(), tiePoints, true);
     }
 
     protected short[] getResolutions(String gridIndex) {
