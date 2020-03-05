@@ -253,16 +253,16 @@
             <artifactId>s3tbx-spot-vgt-reader</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.esa.snap.seadas</groupId>
-            <artifactId>seadas-reader</artifactId>
-            <version>${seadas.reader.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.esa.snap.seadas</groupId>
-            <artifactId>seadas-reader-ui</artifactId>
-            <version>${seadas.reader.ui.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.esa.snap.seadas</groupId>-->
+            <!--<artifactId>seadas-reader</artifactId>-->
+            <!--<version>${seadas.reader.version}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.esa.snap.seadas</groupId>-->
+            <!--<artifactId>seadas-reader-ui</artifactId>-->
+            <!--<version>${seadas.reader.ui.version}</version>-->
+        <!--</dependency>-->
 
 
         <dependency>

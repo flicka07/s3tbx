@@ -67,8 +67,8 @@
         <module>s3tbx-slstr-pdu-stitching-ui</module>
         <module>s3tbx-slstr-regrid</module>
         <module>s3tbx-spot-vgt-reader</module>
-        <module>seadas-reader</module>
-        <module>seadas-reader-ui</module>
+        <!--<module>seadas-reader</module>-->
+        <!--<module>seadas-reader-ui</module>-->
     </modules>
 
     <packaging>pom</packaging>
@@ -84,9 +84,10 @@
         <s3tbx.version>8.0.0-SNAPSHOT</s3tbx.version>
         <netbeans.version>RELEASE82</netbeans.version>
         <javahelp.version>2.0.05</javahelp.version>
+        <javahelp.version>2.0.05</javahelp.version>
         <netcdf.version>4.3.22</netcdf.version>
-        <seadas.reader.version>1.9-SNAPSHOT</seadas.reader.version>
-        <seadas.reader.ui.version>1.9-SNAPSHOT</seadas.reader.ui.version>
+<!--        <seadas.reader.version>1.9-SNAPSHOT</seadas.reader.version>-->
+<!--        <seadas.reader.ui.version>1.9-SNAPSHOT</seadas.reader.ui.version>-->
         <brandingToken>s3tbx</brandingToken>
         <user.language>en</user.language>
         <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
@@ -365,7 +366,7 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>[3.2.5,)</version>
+                                    <version>[3.2.5,3.6.0]</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>1.8</version>
