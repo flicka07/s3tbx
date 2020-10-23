@@ -236,9 +236,9 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
             label = "Set of neuronal nets")
     private String netSet = STANDARD_NETS;
 
-    @Parameter(description = "List of surface Reflectance Bands (comma seperated) used for the source product",
-            label = "Surface Reflactance Bands")
-    private String surfaceReflectanceBands;
+    @Parameter(label = "Source reflectance bands", description = "List of surface Reflectance Bands used from the source product", rasterDataNodeType = Band.class)
+    private String[] surfaceReflectanceBands;
+
 
     @Parameter(defaultValue = "true", description = "Read remote sensing reflectances instead of water leaving reflectances.",
             label = "Input AC reflectances as rrs instead of rhow")
@@ -298,7 +298,7 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
         this.atmosphericAuxDataPath = atmosphericAuxDataPath;
     }
 
-    public void setSurfaceReflectanceBands(String surfaceReflectanceBands) {
+    public void setSurfaceReflectanceBands(String[] surfaceReflectanceBands) {
         this.surfaceReflectanceBands = surfaceReflectanceBands;
     }
 
@@ -926,8 +926,8 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
             if (surfaceReflectanceBands == null) {
                 throw new OperatorException("The surface reflectance bands are required.");
             }
-            C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands.trim().split("\\s*,\\s*");
-            C2rccHrocAlgorithm.NN_SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands.trim().split("\\s*,\\s*");
+            C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands;
+            C2rccHrocAlgorithm.NN_SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands;
             SUN_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 0;
             SUN_AZI_IX = SOURCE_BAND_REFL_NAMES.length + 1;
             VIEW_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 2;
