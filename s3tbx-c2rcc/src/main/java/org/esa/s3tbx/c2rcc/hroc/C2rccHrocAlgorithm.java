@@ -1,4 +1,4 @@
-package org.esa.s3tbx.c2rcc.acrefl;
+package org.esa.s3tbx.c2rcc.hroc;
 
 import org.esa.snap.core.nn.NNffbpAlphaTabFast;
 import org.esa.snap.core.util.BitSetter;
@@ -20,7 +20,7 @@ import static org.esa.s3tbx.c2rcc.util.ArrayMath.*;
  * @author Roland Doerffer
  * @author Norman Fomferra
  */
-public class C2rccAcReflAlgorithm {
+public class C2rccHrocAlgorithm {
 
     public static final int IDX_rtosa_aann = 0;
     public static final int IDX_rtosa_rw = 1;
@@ -104,7 +104,7 @@ public class C2rccAcReflAlgorithm {
     private boolean outputUncertainties;
     private boolean deriveRwFromPathAndTransmittance;
 
-    C2rccAcReflAlgorithm(final String[] nnFilePaths, final boolean loadFromResources) throws IOException {
+    C2rccHrocAlgorithm(final String[] nnFilePaths, final boolean loadFromResources) throws IOException {
         nnNames = new ArrayList<>();
 
         // rtosa auto NN
@@ -610,7 +610,7 @@ public class C2rccAcReflAlgorithm {
         final InputStream stream;
         if (loadFromResource) {
             String name = "/auxdata/nets/" + sourcePath;
-            stream = C2rccAcReflAlgorithm.class.getResourceAsStream(name);
+            stream = C2rccHrocAlgorithm.class.getResourceAsStream(name);
             if (stream == null) {
                 throw new IllegalStateException("resource not found: " + name);
             }

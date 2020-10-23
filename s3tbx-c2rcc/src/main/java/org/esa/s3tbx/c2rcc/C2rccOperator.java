@@ -5,7 +5,7 @@ import org.esa.s3tbx.c2rcc.meris4.C2rccMeris4Operator;
 import org.esa.s3tbx.c2rcc.modis.C2rccModisOperator;
 import org.esa.s3tbx.c2rcc.msi.C2rccMsiOperator;
 import org.esa.s3tbx.c2rcc.olci.C2rccOlciOperator;
-import org.esa.s3tbx.c2rcc.acrefl.C2rccAcReflOperator;
+import org.esa.s3tbx.c2rcc.hroc.C2rccHrocOperator;
 import org.esa.s3tbx.c2rcc.seawifs.C2rccSeaWiFSOperator;
 import org.esa.s3tbx.c2rcc.viirs.C2rccViirsOperator;
 import org.esa.snap.core.datamodel.Product;
@@ -153,10 +153,10 @@ public class C2rccOperator extends Operator {
             configure(c2rccMsiOperator);
             targetProduct = setSourceAndGetTarget(c2rccMsiOperator);
         } else if (isReflectance(sourceProduct)) {
-            C2rccAcReflOperator c2RccAcReflOperator = new C2rccAcReflOperator();
-            c2RccAcReflOperator.setParameterDefaultValues();
-            configure(c2RccAcReflOperator);
-            targetProduct = setSourceAndGetTarget(c2RccAcReflOperator);
+            C2rccHrocOperator c2rccHrocOperator = new C2rccHrocOperator();
+            c2rccHrocOperator.setParameterDefaultValues();
+            configure(c2rccHrocOperator);
+            targetProduct = setSourceAndGetTarget(c2rccHrocOperator);
         } else {
             throw new OperatorException("Illegal source product.");
         }
@@ -246,7 +246,7 @@ public class C2rccOperator extends Operator {
         if (isNotNullAndNotEmpty(sensorName)) {
             return "reflectance".equalsIgnoreCase(sensorName);
         } else {
-            return C2rccAcReflOperator.isValidInput(product);
+            return C2rccHrocOperator.isValidInput(product);
         }
     }
 

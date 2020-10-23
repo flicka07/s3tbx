@@ -1,4 +1,4 @@
-package org.esa.s3tbx.c2rcc.acrefl;
+package org.esa.s3tbx.c2rcc.hroc;
 
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s3tbx.c2rcc.C2rccConfigurable;
@@ -31,7 +31,7 @@ import java.util.logging.Level;
 
 import static java.lang.StrictMath.log;
 import static org.esa.s3tbx.c2rcc.C2rccCommons.*;
-import static org.esa.s3tbx.c2rcc.acrefl.C2rccAcReflAlgorithm.*;
+import static org.esa.s3tbx.c2rcc.hroc.C2rccHrocAlgorithm.*;
 
 // todo (nf) - Add min/max values of NN inputs and outputs to metadata (https://github.com/bcdev/s3tbx-c2rcc/issues/3)
 
@@ -43,12 +43,12 @@ import static org.esa.s3tbx.c2rcc.acrefl.C2rccAcReflAlgorithm.*;
  *
  * @author Norman Fomferra, Helga Ganz
  */
-@OperatorMetadata(alias = "c2rcc.acrefl", version = "1.0",
+@OperatorMetadata(alias = "c2rcc.hroc", version = "1.0",
         authors = "Roland Doerffer, Marco Peters, Sabine Embacher (Brockmann Consult), Helga Ganz",
         category = "Optical/Thematic Water Processing",
         copyright = "Copyright (C) 2016 by Brockmann Consult",
         description = "Performs atmospheric correction and IOP retrieval with uncertainties on precalculated AC-reflectances data products.")
-public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigurable {
+public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurable {
     private static int SUN_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 0;
     private static int SUN_AZI_IX = SOURCE_BAND_REFL_NAMES.length + 1;
     private static int VIEW_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 2;
@@ -285,7 +285,7 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
     @Parameter(defaultValue = "true", label = "Output uncertainties")
     private boolean outputUncertainties;
 
-    private C2rccAcReflAlgorithm algorithm;
+    private C2rccHrocAlgorithm algorithm;
     private AtmosphericAuxdata atmosphericAuxdata;
     private ElevationModel elevationModel;
     private double[] solflux;
@@ -430,7 +430,7 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
 
     @Override
     protected void computePixel(int x, int y, Sample[] sourceSamples, WritableSample[] targetSamples) {
-        final double[] reflectances = new double[C2rccAcReflAlgorithm.SOURCE_BAND_REFL_NAMES.length];
+        final double[] reflectances = new double[C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES.length];
         for (int i = 0; i < reflectances.length; i++) {
             if (inputAsRrs) {
                 reflectances[i] = sourceSamples[i].getDouble();
@@ -553,8 +553,8 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
 
     @Override
     protected void configureSourceSamples(SourceSampleConfigurer sc) throws OperatorException {
-        for (int i = 0; i < C2rccAcReflAlgorithm.SOURCE_BAND_REFL_NAMES.length; i++) {
-            sc.defineSample(i, C2rccAcReflAlgorithm.SOURCE_BAND_REFL_NAMES[i]);
+        for (int i = 0; i < C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES.length; i++) {
+            sc.defineSample(i, C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES[i]);
         }
         sc.defineSample(SUN_ZEN_IX, RASTER_NAME_SUN_ZENITH);
         sc.defineSample(SUN_AZI_IX, RASTER_NAME_SUN_AZIMUTH);
@@ -926,8 +926,8 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
             if (surfaceReflectanceBands == null) {
                 throw new OperatorException("The surface reflectance bands are required.");
             }
-            C2rccAcReflAlgorithm.SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands.trim().split("\\s*,\\s*");
-            C2rccAcReflAlgorithm.NN_SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands.trim().split("\\s*,\\s*");
+            C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands.trim().split("\\s*,\\s*");
+            C2rccHrocAlgorithm.NN_SOURCE_BAND_REFL_NAMES = surfaceReflectanceBands.trim().split("\\s*,\\s*");
             SUN_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 0;
             SUN_AZI_IX = SOURCE_BAND_REFL_NAMES.length + 1;
             VIEW_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 2;
@@ -960,7 +960,7 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
             UNC_KD489_IX = SINGLE_IX + 17;
             UNC_KDMIN_IX = SINGLE_IX + 18;
             C2RCC_FLAGS_IX = SINGLE_IX + 19;
-            for (String sourceBandName : C2rccAcReflAlgorithm.SOURCE_BAND_REFL_NAMES) {
+            for (String sourceBandName : C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES) {
                 assertSourceBand(sourceBandName);
             }
 
@@ -1009,13 +1009,13 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
             if (StringUtils.isNotNullAndNotEmpty(alternativeNNPath)) {
                 String[] nnFilePaths = NNUtils.getNNFilePaths(Paths.get(alternativeNNPath),
                         NNUtils.ALTERNATIVE_NET_DIR_NAMES);
-                algorithm = new C2rccAcReflAlgorithm(nnFilePaths, false);
+                algorithm = new C2rccHrocAlgorithm(nnFilePaths, false);
             } else {
                 String[] nnFilePaths = c2rccNetSetMap.get(netSet);
                 if (nnFilePaths == null) {
                     throw new OperatorException(String.format("Unknown set '%s' of neural nets specified.", netSet));
                 }
-                algorithm = new C2rccAcReflAlgorithm(nnFilePaths, true);
+                algorithm = new C2rccHrocAlgorithm(nnFilePaths, true);
             }
             algorithm.setTemperature(temperature);
             algorithm.setSalinity(salinity);
@@ -1191,7 +1191,7 @@ public class C2rccAcReflOperator extends PixelOperator implements C2rccConfigura
         }
 
         public Spi() {
-            super(C2rccAcReflOperator.class);
+            super(C2rccHrocOperator.class);
         }
     }
 }

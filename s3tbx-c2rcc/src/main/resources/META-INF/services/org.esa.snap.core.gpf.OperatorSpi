@@ -8,4 +8,4 @@ org.esa.s3tbx.c2rcc.msi.C2rccMsiOperator$Spi
 org.esa.s3tbx.c2rcc.landsat.C2rccLandsat7Operator$Spi
 org.esa.s3tbx.c2rcc.landsat.C2rccLandsat8Operator$Spi
 org.esa.s3tbx.c2rcc.viirs.C2rccViirsOperator$Spi
-org.esa.s3tbx.c2rcc.acrefl.C2rccAcReflOperator$Spi
+org.esa.s3tbx.c2rcc.hroc.C2rccHrocOperator$Spi

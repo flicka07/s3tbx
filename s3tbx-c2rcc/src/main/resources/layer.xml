@@ -95,11 +95,11 @@
                 <attr name="targetProductNameSuffix" stringvalue="_C2RCC"/>
                 <attr name="helpId" stringvalue="c2rccScientificTool"/>
             </file>
-            <file name="org-esa-s3tbx-c2rcc-acrefl-OpAction.instance">
+            <file name="org-esa-s3tbx-c2rcc-hroc-OpAction.instance">
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="delegate" methodvalue="org.esa.snap.core.gpf.ui.DefaultOperatorAction.create"/>
                 <attr name="displayName" stringvalue="Surface Reflectances"/>
-                <attr name="operatorName" stringvalue="c2rcc.acrefl"/>
+                <attr name="operatorName" stringvalue="c2rcc.hroc"/>
                 <attr name="dialogTitle" stringvalue="Surface Reflectance Processor"/>
                 <attr name="targetProductNameSuffix" stringvalue="_C2RCC"/>
                 <attr name="helpId" stringvalue="c2rccScientificTool"/>
@@ -166,9 +166,9 @@
                               stringvalue="Actions/Operators/org-esa-s3tbx-c2rcc-viirs-OpAction.instance"/>
                         <attr name="position" intvalue="7"/>
                     </file>
-                    <file name="org-esa-s3tbx-c2rcc-acrefl-OpAction.shadow">
+                    <file name="org-esa-s3tbx-c2rcc-hroc-OpAction.shadow">
                         <attr name="originalFile"
-                              stringvalue="Actions/Operators/org-esa-s3tbx-c2rcc-acrefl-OpAction.instance"/>
+                              stringvalue="Actions/Operators/org-esa-s3tbx-c2rcc-hroc-OpAction.instance"/>
                         <attr name="position" intvalue="8"/>
                     </file>
                 </folder>
@@ -229,8 +229,8 @@
             <attr name="operatorName" stringvalue="c2rcc.viirs"/>
             <attr name="disableFromGraphBuilder" stringvalue="true"/>
         </file>
-        <file name="org.esa.s3tbx.c2rcc.acrefl">
-            <attr name="operatorName" stringvalue="c2rcc.acrefl"/>
+        <file name="org.esa.s3tbx.c2rcc.hroc">
+            <attr name="operatorName" stringvalue="c2rcc.hroc"/>
             <attr name="disableFromGraphBuilder" stringvalue="true"/>
         </file>
     </folder>
