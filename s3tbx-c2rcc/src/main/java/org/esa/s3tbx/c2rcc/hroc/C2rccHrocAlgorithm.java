@@ -89,20 +89,13 @@ public class C2rccHrocAlgorithm {
 
     // (5) thresholds for flags
     private double log_threshfak_oor = 0.02; // == ~1.02, for log variables
-    private double thresh_absd_log_rtosa; // threshold for rtosa_oos (max abs log difference)
     private double thresh_rwlogslope;  // threshold for rwa_oos
-    private double thresh_cloudTransD;
 
-    private boolean outputRtoaGcAann;
-    private boolean outputRpath;
-    private boolean outputTdown;
-    private boolean outputTup;
     private boolean outputRwa;
     private boolean outputRwn;
     private boolean outputOos;
     private boolean outputKd;
     private boolean outputUncertainties;
-    private boolean deriveRwFromPathAndTransmittance;
 
     C2rccHrocAlgorithm(final String[] nnFilePaths, final boolean loadFromResources) throws IOException {
         nnNames = new ArrayList<>();
@@ -141,33 +134,8 @@ public class C2rccHrocAlgorithm {
         SOURCE_BAND_REFL_NAMES = sourceBandReflNames;
     }
 
-    public void setThresh_absd_log_rtosa(double thresh_absd_log_rtosa) {
-        this.thresh_absd_log_rtosa = thresh_absd_log_rtosa;
-    }
-
     public void setThresh_rwlogslope(double thresh_rwlogslope) {
         this.thresh_rwlogslope = thresh_rwlogslope;
-    }
-
-    public void setThresh_cloudTransD(double thresh_cloudTransD) {
-        this.thresh_cloudTransD = thresh_cloudTransD;
-    }
-
-
-    public void setOutputRtoaGcAann(boolean outputRtoaGcAann) {
-        this.outputRtoaGcAann = outputRtoaGcAann;
-    }
-
-    public void setOutputRpath(boolean outputRpath) {
-        this.outputRpath = outputRpath;
-    }
-
-    public void setOutputTdown(boolean outputTdown) {
-        this.outputTdown = outputTdown;
-    }
-
-    public void setOutputTup(boolean outputTup) {
-        this.outputTup = outputTup;
     }
 
     public void setOutputRhow(boolean outputRwa) {
@@ -188,10 +156,6 @@ public class C2rccHrocAlgorithm {
 
     public void setOutputUncertainties(boolean outputUncertainties) {
         this.outputUncertainties = outputUncertainties;
-    }
-
-    public void setDeriveRwFromPathAndTransmittance(boolean deriveRwFromPathAndTransmittance) {
-        this.deriveRwFromPathAndTransmittance = deriveRwFromPathAndTransmittance;
     }
 
     public void setTemperature(double temperature) {

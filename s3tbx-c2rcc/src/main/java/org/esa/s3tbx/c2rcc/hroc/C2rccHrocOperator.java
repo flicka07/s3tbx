@@ -3,14 +3,9 @@ package org.esa.s3tbx.c2rcc.hroc;
 import com.bc.ceres.core.ProgressMonitor;
 import org.esa.s3tbx.c2rcc.C2rccConfigurable;
 import org.esa.s3tbx.c2rcc.ancillary.AtmosphericAuxdata;
-import org.esa.s3tbx.c2rcc.ancillary.AtmosphericAuxdataBuilder;
 import org.esa.s3tbx.c2rcc.util.NNUtils;
 import org.esa.s3tbx.c2rcc.util.RgbProfiles;
 import org.esa.snap.core.datamodel.*;
-import org.esa.snap.core.dataop.dem.ElevationModel;
-import org.esa.snap.core.dataop.dem.ElevationModelDescriptor;
-import org.esa.snap.core.dataop.dem.ElevationModelRegistry;
-import org.esa.snap.core.dataop.resamp.Resampling;
 import org.esa.snap.core.gpf.OperatorException;
 import org.esa.snap.core.gpf.OperatorSpi;
 import org.esa.snap.core.gpf.annotations.OperatorMetadata;
@@ -48,7 +43,7 @@ import static org.esa.s3tbx.c2rcc.hroc.C2rccHrocAlgorithm.*;
         category = "Optical/Thematic Water Processing",
         copyright = "Copyright (C) 2016 by Brockmann Consult",
         description = "Performs atmospheric correction and IOP retrieval with uncertainties on precalculated AC-reflectances data products.")
-public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurable {
+public class C2rccHrocOperator extends PixelOperator {
     private static int SUN_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 0;
     private static int SUN_AZI_IX = SOURCE_BAND_REFL_NAMES.length + 1;
     private static int VIEW_ZEN_IX = SOURCE_BAND_REFL_NAMES.length + 2;
@@ -63,41 +58,34 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
     private static int NN_SPECTRUM_COUNT = NN_SOURCE_BAND_REFL_NAMES.length;
     private static int NORM_NN_SPECTRUM_COUNT = NN_SPECTRUM_COUNT - 2;
     private static int FULL_SPECTRUM_COUNT = SOURCE_BAND_REFL_NAMES.length;
-    private static int SINGLE_IX = FULL_SPECTRUM_COUNT + 7 * NN_SPECTRUM_COUNT;
+    private static int SINGLE_IX = FULL_SPECTRUM_COUNT + NN_SPECTRUM_COUNT;
 
-    private static int RTOA_IX = 0;
-    private static int RTOSA_IX = FULL_SPECTRUM_COUNT;
-    private static int RTOSA_AANN_IX = FULL_SPECTRUM_COUNT + NN_SPECTRUM_COUNT;
-    private static int RPATH_IX = FULL_SPECTRUM_COUNT + 2 * NN_SPECTRUM_COUNT;
-    private static int TDOWN_IX = FULL_SPECTRUM_COUNT + 3 * NN_SPECTRUM_COUNT;
-    private static int TUP_IX = FULL_SPECTRUM_COUNT + 4 * NN_SPECTRUM_COUNT;
-    private static int AC_REFLEC_IX = FULL_SPECTRUM_COUNT + 5 * NN_SPECTRUM_COUNT;
-    private static int RHOWN_IX = FULL_SPECTRUM_COUNT + 6 * NN_SPECTRUM_COUNT;
+    private static int AC_REFLEC_IX = 0 ;
+    private static int RHOWN_IX = FULL_SPECTRUM_COUNT ;
 
-    private static int OOS_RTOSA_IX = SINGLE_IX;
-    private static int OOS_AC_REFLEC_IX = SINGLE_IX + 1;
+    private static int OOS_AC_REFLEC_IX = SINGLE_IX;
 
-    private static int IOP_APIG_IX = SINGLE_IX + 2;
-    private static int IOP_ADET_IX = SINGLE_IX + 3;
-    private static int IOP_AGELB_IX = SINGLE_IX + 4;
-    private static int IOP_BPART_IX = SINGLE_IX + 5;
-    private static int IOP_BWIT_IX = SINGLE_IX + 6;
+    private static int IOP_APIG_IX = SINGLE_IX + 1;
+    private static int IOP_ADET_IX = SINGLE_IX + 2;
+    private static int IOP_AGELB_IX = SINGLE_IX + 3;
+    private static int IOP_BPART_IX = SINGLE_IX + 4;
+    private static int IOP_BWIT_IX = SINGLE_IX + 5;
 
-    private static int KD489_IX = SINGLE_IX + 7;
-    private static int KDMIN_IX = SINGLE_IX + 8;
+    private static int KD489_IX = SINGLE_IX + 6;
+    private static int KDMIN_IX = SINGLE_IX + 7;
 
-    private static int UNC_APIG_IX = SINGLE_IX + 9;
-    private static int UNC_ADET_IX = SINGLE_IX + 10;
-    private static int UNC_AGELB_IX = SINGLE_IX + 11;
-    private static int UNC_BPART_IX = SINGLE_IX + 12;
-    private static int UNC_BWIT_IX = SINGLE_IX + 13;
-    private static int UNC_ADG_IX = SINGLE_IX + 14;
-    private static int UNC_ATOT_IX = SINGLE_IX + 15;
-    private static int UNC_BTOT_IX = SINGLE_IX + 16;
-    private static int UNC_KD489_IX = SINGLE_IX + 17;
-    private static int UNC_KDMIN_IX = SINGLE_IX + 18;
+    private static int UNC_APIG_IX = SINGLE_IX + 8;
+    private static int UNC_ADET_IX = SINGLE_IX + 9;
+    private static int UNC_AGELB_IX = SINGLE_IX + 10;
+    private static int UNC_BPART_IX = SINGLE_IX + 11;
+    private static int UNC_BWIT_IX = SINGLE_IX + 12;
+    private static int UNC_ADG_IX = SINGLE_IX + 13;
+    private static int UNC_ATOT_IX = SINGLE_IX + 14;
+    private static int UNC_BTOT_IX = SINGLE_IX + 15;
+    private static int UNC_KD489_IX = SINGLE_IX + 16;
+    private static int UNC_KDMIN_IX = SINGLE_IX + 17;
 
-    private static int C2RCC_FLAGS_IX = SINGLE_IX + 19;
+    private static int C2RCC_FLAGS_IX = SINGLE_IX + 18;
 
     private static final String PRODUCT_TYPE = "C2RCC_REFLECTANCE";
 
@@ -148,30 +136,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
     @SourceProduct(label = "AC-reflectance product", description = "AC-reflectance source product.")
     private Product sourceProduct;
 
-    @SourceProduct(description = "The first product providing ozone values for ozone interpolation. " +
-            "Use either the TOMSOMI and NCEP products or CAMS products or the atmosphericAuxdataPath to as source for ozone and air pressure.",
-            optional = true,
-            label = "Ozone interpolation start product (TOMSOMI or CAMS)")
-    private Product ozoneStartProduct;
-
-    @SourceProduct(description = "The second product providing ozone values for ozone interpolation. " +
-            "Use either the TOMSOMI and NCEP products or CAMS products or the atmosphericAuxdataPath to as source for ozone and air pressure.",
-            optional = true,
-            label = "Ozone interpolation end product (TOMSOMI or CAMS)")
-    private Product ozoneEndProduct;
-
-    @SourceProduct(description = "The first product providing air pressure values for pressure interpolation. " +
-            "Use either the TOMSOMI and NCEP products or CAMS products or the atmosphericAuxdataPath to as source for ozone and air pressure.",
-            optional = true,
-            label = "Air pressure interpolation start product (NCEP or CAMS)")
-    private Product pressureStartProduct;
-
-    @SourceProduct(description = "The second product providing air pressure values for pressure interpolation. " +
-            "Use either the TOMSOMI and NCEP products or CAMS products or the atmosphericAuxdataPath to as source for ozone and air pressure.",
-            optional = true,
-            label = "Air pressure interpolation end product (NCEP or CAMS)")
-    private Product pressureEndProduct;
-
     @Parameter(label = "Valid-pixel expression",
             defaultValue = "",
             description = "Defines the pixels which are valid for processing.",
@@ -186,18 +150,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
             description = "The value used as temperature for the scene.")
     private double temperature;
 
-    @Parameter(defaultValue = "330", unit = "DU", interval = "(0, 1000)",
-            description = "The value used as ozone if not provided by auxiliary data.")
-    private double ozone;
-
-    @Parameter(defaultValue = "1000", unit = "hPa", interval = "(800, 1040)", label = "Air Pressure at Sea Level",
-            description = "The surface air pressure at sea level if not provided by auxiliary data.")
-    private double press;
-
-    @Parameter(defaultValue = "0", unit = "m", interval = "(0, 8500)", label = "Elevation",
-            description = "Used as fallback if elevation could not be taken from GETASSE30 DEM.")
-    private double elevation;
-
     @Parameter(alias = "TSMfac", defaultValue = "1.72", description = "TSM factor (TSM = TSMfac * iop_btot^TSMexp).", label = "TSM factor")
     private double TSMfakBpart;
 
@@ -210,21 +162,9 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
     @Parameter(alias = "CHLfac", defaultValue = "21.0", description = "Chlorophyll factor ( CHL = iop_apig^CHLexp * CHLfac).", label = "CHL factor")
     private double CHLfak;
 
-    @Parameter(defaultValue = "0.05", description = "Threshold for out of scope of nn training dataset flag for gas corrected top-of-atmosphere reflectances",
-            label = "Threshold rtosa OOS")
-    private double thresholdRtosaOOS;
-
     @Parameter(defaultValue = "0.1", description = "Threshold for out of scope of nn training dataset flag for atmospherically corrected reflectances",
             label = "Threshold AC reflectances OOS")
     private double thresholdAcReflecOos;
-
-    @Parameter(defaultValue = "0.955", description = "Threshold for cloud test based on downwelling transmittance @865",
-            label = "Threshold for cloud flag on down transmittance @865")
-    private double thresholdCloudTDown865;
-
-    @Parameter(description = "Path to the atmospheric auxiliary data directory. Use either this or the specified products on the I/O Parameters tab. " +
-            "If the auxiliary data is not available at this path, the data will automatically be downloaded.")
-    private String atmosphericAuxDataPath;
 
     @Parameter(description = "Path to an alternative set of neuronal nets. Use this to replace the standard set of neuronal nets.",
             label = "Alternative NN Path")
@@ -239,7 +179,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
     @Parameter(label = "Source reflectance bands", description = "List of surface Reflectance Bands used from the source product", rasterDataNodeType = Band.class)
     private String[] surfaceReflectanceBands;
 
-
     @Parameter(defaultValue = "true", description = "Read remote sensing reflectances instead of water leaving reflectances.",
             label = "Input AC reflectances as rrs instead of rhow")
     private boolean inputAsRrs;
@@ -247,28 +186,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
     @Parameter(defaultValue = "false", description = "Write remote sensing reflectances instead of water leaving reflectances.",
             label = "Output AC reflectances as rrs instead of rhow")
     private boolean outputAsRrs;
-
-    @Parameter(defaultValue = "false", description = "Alternative way of calculating water reflectance. Still experimental.",
-            label = "Derive water reflectance from path radiance and transmittance")
-    private boolean deriveRwFromPathAndTransmittance;
-
-    @Parameter(defaultValue = "false", label = "Output TOA reflectances")
-    private boolean outputRtoa;
-
-    @Parameter(defaultValue = "false", label = "Output gas corrected TOSA reflectances")
-    private boolean outputRtosaGc;
-
-    @Parameter(defaultValue = "false", label = "Output gas corrected TOSA reflectances of auto nn")
-    private boolean outputRtosaGcAann;
-
-    @Parameter(defaultValue = "false", label = "Output path radiance reflectances")
-    private boolean outputRpath;
-
-    @Parameter(defaultValue = "false", label = "Output downward transmittance")
-    private boolean outputTdown;
-
-    @Parameter(defaultValue = "false", label = "Output upward transmittance")
-    private boolean outputTup;
 
     @Parameter(defaultValue = "true", label = "Output atmospherically corrected angular dependent reflectances")
     private boolean outputAcReflectance;
@@ -287,83 +204,33 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
 
     private C2rccHrocAlgorithm algorithm;
     private AtmosphericAuxdata atmosphericAuxdata;
-    private ElevationModel elevationModel;
     private double[] solflux;
     private TimeCoding timeCoding;
     private ProductData.UTC sourceTime;
 
 
-    @Override
-    public void setAtmosphericAuxDataPath(String atmosphericAuxDataPath) {
-        this.atmosphericAuxDataPath = atmosphericAuxDataPath;
-    }
-
     public void setSurfaceReflectanceBands(String[] surfaceReflectanceBands) {
         this.surfaceReflectanceBands = surfaceReflectanceBands;
     }
 
-    @Override
-    public void setOzoneStartProduct(Product ozoneStartProduct) {
-        this.ozoneStartProduct = ozoneStartProduct;
-    }
-
-    @Override
-    public void setOzoneEndProduct(Product ozoneEndProduct) {
-        this.ozoneEndProduct = ozoneEndProduct;
-    }
-
-    @Override
-    public void setPressureStartProduct(Product pressureStartProduct) {
-        this.pressureStartProduct = pressureStartProduct;
-    }
-
-    @Override
-    public void setPressureEndProduct(Product pressureEndProduct) {
-        this.pressureEndProduct = pressureEndProduct;
-    }
-
-    @Override
     public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
-    @Override
     public void setSalinity(double salinity) {
         this.salinity = salinity;
     }
 
-    @Override
-    public void setOzone(double ozone) {
-        this.ozone = ozone;
-    }
-
-    @Override
-    public void setPress(double press) {
-        this.press = press;
-    }
-
-
-    @Override
     public void setValidPixelExpression(String validPixelExpression) {
         this.validPixelExpression = validPixelExpression;
     }
 
-    @Override
-    public void setOutputRtosa(boolean outputRtosa) {
-        this.outputRtosaGc = outputRtosa;
-    }
-
-    @Override
     public void setOutputAsRrs(boolean asRadianceRefl) {
         outputAsRrs = asRadianceRefl;
     }
 
     public void setInputAsRrs(boolean asRadianceRefl) {
         inputAsRrs = asRadianceRefl;
-    }
-
-    public void setDeriveRwFromPathAndTransmittance(boolean deriveRwFromPathAndTransmittance) {
-        this.deriveRwFromPathAndTransmittance = deriveRwFromPathAndTransmittance;
     }
 
     void setOutputKd(boolean outputKd) {
@@ -374,32 +241,12 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
         this.outputOos = outputOos;
     }
 
-    void setOutputRpath(boolean outputRpath) {
-        this.outputRpath = outputRpath;
-    }
-
-    void setOutputRtoa(boolean outputRtoa) {
-        this.outputRtoa = outputRtoa;
-    }
-
-    void setOutputRtosaGcAann(boolean outputRtosaGcAann) {
-        this.outputRtosaGcAann = outputRtosaGcAann;
-    }
-
     void setOutputAcReflectance(boolean outputAcReflectance) {
         this.outputAcReflectance = outputAcReflectance;
     }
 
     void setOutputRhown(boolean outputRhown) {
         this.outputRhown = outputRhown;
-    }
-
-    void setOutputTdown(boolean outputTdown) {
-        this.outputTdown = outputTdown;
-    }
-
-    void setOutputTup(boolean outputTup) {
-        this.outputTup = outputTup;
     }
 
     void setOutputUncertainties(boolean outputUncertainties) {
@@ -446,20 +293,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
         double lon = geoPos.getLon();
 
         final double mjd = timeCoding.getMJD(pixelPos);
-        double ozone = fetchOzone(atmosphericAuxdata, mjd, x, y, lat, lon);
-        double atmPress = fetchSurfacePressure(atmosphericAuxdata, mjd, x, y, lat, lon);
-
-        final double altitude;
-        if (elevationModel != null) {
-            try {
-                altitude = elevationModel.getElevation(geoPos);
-            } catch (Exception e) {
-                throw new OperatorException("Unable to compute altitude.", e);
-            }
-        } else {
-            // in case elevationModel could not be initialised
-            altitude = elevation;
-        }
 
         Result result = algorithm.processPixel(x, y, lat, lon,
                 reflectances,
@@ -468,10 +301,10 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
                 sourceSamples[SUN_AZI_IX].getDouble(),
                 sourceSamples[VIEW_ZEN_IX].getDouble(),
                 sourceSamples[VIEW_AZI_IX].getDouble(),
-                altitude,
+                0.0,
                 sourceSamples[VALID_PIXEL_IX].getBoolean(),
-                atmPress,
-                ozone);
+                0.0,
+                0.0);
 
         // if (outputRtoa) {
         //     for (int i = 0; i < result.r_toa.length; i++) {
@@ -940,26 +773,25 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
 
             AC_REFLEC_IX = 0;
             RHOWN_IX = FULL_SPECTRUM_COUNT;
-            OOS_RTOSA_IX = SINGLE_IX;
-            OOS_AC_REFLEC_IX = SINGLE_IX + 1;
-            IOP_APIG_IX = SINGLE_IX + 2;
-            IOP_ADET_IX = SINGLE_IX + 3;
-            IOP_AGELB_IX = SINGLE_IX + 4;
-            IOP_BPART_IX = SINGLE_IX + 5;
-            IOP_BWIT_IX = SINGLE_IX + 6;
-            KD489_IX = SINGLE_IX + 7;
-            KDMIN_IX = SINGLE_IX + 8;
-            UNC_APIG_IX = SINGLE_IX + 9;
-            UNC_ADET_IX = SINGLE_IX + 10;
-            UNC_AGELB_IX = SINGLE_IX + 11;
-            UNC_BPART_IX = SINGLE_IX + 12;
-            UNC_BWIT_IX = SINGLE_IX + 13;
-            UNC_ADG_IX = SINGLE_IX + 14;
-            UNC_ATOT_IX = SINGLE_IX + 15;
-            UNC_BTOT_IX = SINGLE_IX + 16;
-            UNC_KD489_IX = SINGLE_IX + 17;
-            UNC_KDMIN_IX = SINGLE_IX + 18;
-            C2RCC_FLAGS_IX = SINGLE_IX + 19;
+            OOS_AC_REFLEC_IX = SINGLE_IX;
+            IOP_APIG_IX = SINGLE_IX + 1;
+            IOP_ADET_IX = SINGLE_IX + 2;
+            IOP_AGELB_IX = SINGLE_IX + 3;
+            IOP_BPART_IX = SINGLE_IX + 4;
+            IOP_BWIT_IX = SINGLE_IX + 5;
+            KD489_IX = SINGLE_IX + 6;
+            KDMIN_IX = SINGLE_IX + 7;
+            UNC_APIG_IX = SINGLE_IX + 8;
+            UNC_ADET_IX = SINGLE_IX + 9;
+            UNC_AGELB_IX = SINGLE_IX + 10;
+            UNC_BPART_IX = SINGLE_IX + 11;
+            UNC_BWIT_IX = SINGLE_IX + 12;
+            UNC_ADG_IX = SINGLE_IX + 13;
+            UNC_ATOT_IX = SINGLE_IX + 14;
+            UNC_BTOT_IX = SINGLE_IX + 15;
+            UNC_KD489_IX = SINGLE_IX + 16;
+            UNC_KDMIN_IX = SINGLE_IX + 17;
+            C2RCC_FLAGS_IX = SINGLE_IX + 18;
             for (String sourceBandName : C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES) {
                 assertSourceBand(sourceBandName);
             }
@@ -979,12 +811,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
             throw new OperatorException("Source must be a AC-reflectance product", e);
         }
 
-
-        ElevationModelDescriptor getasse30 = ElevationModelRegistry.getInstance().getDescriptor("GETASSE30");
-        if (getasse30 != null) {
-            // if elevation model cannot be initialised the fallback height will be used
-            elevationModel = getasse30.createDem(Resampling.BILINEAR_INTERPOLATION);
-        }
         // (mp/20160504) - SolarFlux is not used so we set it to 0
         solflux = new double[SOURCE_BAND_REFL_NAMES.length]; //getSolarFluxValues();
         timeCoding = sourceProduct.getSceneTimeCoding();
@@ -1019,19 +845,12 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
             }
             algorithm.setTemperature(temperature);
             algorithm.setSalinity(salinity);
-            algorithm.setThresh_absd_log_rtosa(thresholdRtosaOOS);
             algorithm.setThresh_rwlogslope(thresholdAcReflecOos);
-            algorithm.setThresh_cloudTransD(thresholdCloudTDown865);
-            algorithm.setOutputRtoaGcAann(outputRtosaGcAann);
-            algorithm.setOutputRpath(outputRpath);
-            algorithm.setOutputTdown(outputTdown);
-            algorithm.setOutputTup(outputTup);
             algorithm.setOutputRhow(outputAcReflectance);
             algorithm.setOutputRhown(outputRhown);
             algorithm.setOutputOos(outputOos);
             algorithm.setOutputKd(outputKd);
             algorithm.setOutputUncertainties(outputUncertainties);
-            algorithm.setDeriveRwFromPathAndTransmittance(deriveRwFromPathAndTransmittance);
             addNnNamesMetadata();
             pm.worked(1);
             pm.setSubTaskName("Initialising atmospheric auxiliary data");
@@ -1042,7 +861,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
             } else {
                 sourceTime = sourceProduct.getStartTime();
             }
-            initAtmosphericAuxdata();
             pm.worked(1);
         } catch (IOException e) {
             throw new OperatorException(e);
@@ -1155,21 +973,6 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
                 }
                 return;
             }
-        }
-    }
-
-    private void initAtmosphericAuxdata() {
-        AtmosphericAuxdataBuilder auxdataBuilder = new AtmosphericAuxdataBuilder();
-        auxdataBuilder.setOzone(ozone);
-        auxdataBuilder.setSurfacePressure(press);
-        auxdataBuilder.useAtmosphericAuxDataPath(atmosphericAuxDataPath);
-        auxdataBuilder.useTomsomiCamsProducts(ozoneStartProduct, ozoneEndProduct);
-        auxdataBuilder.useNcepCamsProducts(pressureStartProduct, pressureEndProduct);
-        auxdataBuilder.setSourceTime(sourceTime);
-        try {
-            atmosphericAuxdata = auxdataBuilder.create();
-        } catch (Exception e) {
-            throw new OperatorException("Could not create provider for atmospheric auxdata", e);
         }
     }
 

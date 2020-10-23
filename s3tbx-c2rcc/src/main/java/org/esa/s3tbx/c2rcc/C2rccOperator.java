@@ -73,7 +73,7 @@ public class C2rccOperator extends Operator {
     @TargetProduct
     private Product targetProduct;
 
-    @Parameter(valueSet = {"", "olci", "msi", "meris", "meris4", "modis", "seawifs, viirs"})
+    @Parameter(valueSet = {"", "olci", "msi", "meris", "meris4", "modis", "seawifs", "viirs", "hroc"})
     private String sensorName;
 
     @Parameter(label = "Valid-pixel expression", converter = BooleanExpressionConverter.class,
@@ -152,10 +152,14 @@ public class C2rccOperator extends Operator {
             c2rccMsiOperator.setParameterDefaultValues();
             configure(c2rccMsiOperator);
             targetProduct = setSourceAndGetTarget(c2rccMsiOperator);
-        } else if (isReflectance(sourceProduct)) {
+        } else if (isHroc(sourceProduct)) {
             C2rccHrocOperator c2rccHrocOperator = new C2rccHrocOperator();
             c2rccHrocOperator.setParameterDefaultValues();
-            configure(c2rccHrocOperator);
+            if (StringUtils.isNotNullAndNotEmpty(validPixelExpression)) {
+                c2rccHrocOperator.setValidPixelExpression(validPixelExpression);
+            c2rccHrocOperator.setSalinity(salinity);
+            c2rccHrocOperator.setTemperature(temperature);
+            c2rccHrocOperator.setOutputAsRrs(outputAsRrs);
             targetProduct = setSourceAndGetTarget(c2rccHrocOperator);
         } else {
             throw new OperatorException("Illegal source product.");
@@ -242,9 +246,9 @@ public class C2rccOperator extends Operator {
         }
     }
 
-    private boolean isReflectance(Product product) {
+    private boolean isHroc(Product product) {
         if (isNotNullAndNotEmpty(sensorName)) {
-            return "reflectance".equalsIgnoreCase(sensorName);
+            return "hroc".equalsIgnoreCase(sensorName);
         } else {
             return C2rccHrocOperator.isValidInput(product);
         }
