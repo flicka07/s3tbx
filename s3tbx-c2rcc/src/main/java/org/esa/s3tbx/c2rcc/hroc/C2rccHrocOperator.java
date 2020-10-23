@@ -433,7 +433,7 @@ public class C2rccHrocOperator extends PixelOperator implements C2rccConfigurabl
         final double[] reflectances = new double[C2rccHrocAlgorithm.SOURCE_BAND_REFL_NAMES.length];
         for (int i = 0; i < reflectances.length; i++) {
             if (inputAsRrs) {
-                reflectances[i] = sourceSamples[i].getDouble();
+                reflectances[i] = log(sourceSamples[i].getDouble() / Math.PI);
             } else {
                 reflectances[i] = log(sourceSamples[i].getDouble());
             }
